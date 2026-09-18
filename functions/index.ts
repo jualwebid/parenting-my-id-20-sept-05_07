@@ -308,7 +308,11 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const siteDesc = siteConfig?.site_description || 'Portal berita & informasi terpercaya.';
   const seoTitle = siteConfig?.seo_meta_title || `${siteName} - Beranda`;
   const seoDesc = siteConfig?.seo_meta_description || siteDesc;
-  const siteUrl = (env.SITE_URL || url.origin).replace(/\/$/, '');
+  const siteUrl = (
+    siteConfig?.site_url && !/example\.com|domain\.com/.test(siteConfig.site_url)
+      ? siteConfig.site_url
+      : (env.SITE_URL && !/example\.com|domain\.com/.test(env.SITE_URL) ? env.SITE_URL : url.origin)
+  ).replace(/\/$/, '');
   const featuredImage = siteConfig?.site_logo || 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&w=1200&h=630&q=80&fm=webp';
 
   // MARKDOWN CONTENT NEGOTIATION FOR AGENTS (RFC 8288, RFC 9110 & Markdown for Agents)

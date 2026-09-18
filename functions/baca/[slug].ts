@@ -579,7 +579,7 @@ function applyAutoLinks(htmlContent: string, autolinks: AutoLink[]): string {
 export const onRequest: PagesFunction<Env> = async (context) => {
   const { request, env, params } = context;
   const url = new URL(request.url);
-  const siteUrl = (env.SITE_URL || url.origin).replace(/\/$/, '');
+  let siteUrl = (env.SITE_URL && !/example\.com|domain\.com/.test(env.SITE_URL) ? env.SITE_URL : url.origin).replace(/\/$/, '');
 
   const rawSlug = params.slug;
   const slug = Array.isArray(rawSlug) ? rawSlug.join('/') : String(rawSlug || '');
@@ -670,6 +670,12 @@ export const onRequest: PagesFunction<Env> = async (context) => {
             const kLower = String(row.key).toLowerCase();
             if (SENSITIVE.includes(row.key) || kLower.includes('password') || kLower.includes('secret') || kLower.includes('token')) continue;
             try { siteConfig[row.key] = JSON.parse(row.value); } catch { siteConfig[row.key] = row.value; }
+          }
+          if (siteConfig?.site_url && typeof siteConfig.site_url === 'string') {
+            const dbSiteUrl = siteConfig.site_url.trim().replace(/\/$/, '');
+            if (dbSiteUrl && !dbSiteUrl.includes('example.com') && !dbSiteUrl.includes('domain.com')) {
+              siteUrl = dbSiteUrl;
+            }
           }
         }
       } catch {}
