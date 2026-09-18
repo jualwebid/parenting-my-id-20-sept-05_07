@@ -2785,7 +2785,7 @@ Sitemap: ${siteUrl}/sitemap.xml
         const cloudName = (env as any).CLOUDINARY_CLOUD_NAME;
         const apiKey = (env as any).CLOUDINARY_API_KEY;
         const apiSecret = (env as any).CLOUDINARY_API_SECRET;
-        const folder = (env as any).CLOUDINARY_FOLDER || 'parenting-my-id';
+        const folder = (env as any).CLOUDINARY_FOLDER || 'cms-uploads';
 
         if (cloudName && apiKey && apiSecret) {
           const timestamp = Math.floor(Date.now() / 1000).toString();
