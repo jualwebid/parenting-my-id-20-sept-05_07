@@ -1518,7 +1518,7 @@ Sitemap: ${siteUrl}/sitemap.xml
             ).run();
 
             if (updateRes.meta?.changes && updateRes.meta.changes > 0) {
-              syncStaticFilesToGitHub(env, context.waitUntil ? context.waitUntil.bind(context) : undefined);
+              syncStaticFilesToGitHub(env, context.waitUntil ? context.waitUntil.bind(context) : undefined, url.origin);
               return jsonResponse({
                 success: true,
                 post: {
@@ -1572,7 +1572,7 @@ Sitemap: ${siteUrl}/sitemap.xml
 
           const newId = insertResult.meta?.last_row_id || validNumId || id || Date.now();
 
-          syncStaticFilesToGitHub(env, context.waitUntil ? context.waitUntil.bind(context) : undefined);
+          syncStaticFilesToGitHub(env, context.waitUntil ? context.waitUntil.bind(context) : undefined, url.origin);
 
           return jsonResponse({
             success: true,
@@ -1639,7 +1639,7 @@ Sitemap: ${siteUrl}/sitemap.xml
                 ).run();
 
                 if (updateRes.meta?.changes && updateRes.meta.changes > 0) {
-                  syncStaticFilesToGitHub(env, context.waitUntil ? context.waitUntil.bind(context) : undefined);
+                  syncStaticFilesToGitHub(env, context.waitUntil ? context.waitUntil.bind(context) : undefined, url.origin);
                   return jsonResponse({
                     success: true,
                     post: {
@@ -1687,7 +1687,7 @@ Sitemap: ${siteUrl}/sitemap.xml
               ).run();
 
               const newId = insertResult.meta?.last_row_id || validNumId || id || Date.now();
-              syncStaticFilesToGitHub(env, context.waitUntil ? context.waitUntil.bind(context) : undefined);
+              syncStaticFilesToGitHub(env, context.waitUntil ? context.waitUntil.bind(context) : undefined, url.origin);
               return jsonResponse({
                 success: true,
                 post: {
@@ -1708,7 +1708,7 @@ Sitemap: ${siteUrl}/sitemap.xml
         }
       }
 
-      syncStaticFilesToGitHub(env, context.waitUntil ? context.waitUntil.bind(context) : undefined);
+      syncStaticFilesToGitHub(env, context.waitUntil ? context.waitUntil.bind(context) : undefined, url.origin);
       return jsonResponse({ success: true, post: { ...body, id: validNumId || id || Date.now(), slug: generatedSlug, status: postStatus } });
     }
 
@@ -1722,7 +1722,7 @@ Sitemap: ${siteUrl}/sitemap.xml
       if (env.DB && id) {
         try {
           await env.DB.prepare('DELETE FROM posts WHERE id = ?').bind(id).run();
-          syncStaticFilesToGitHub(env, context.waitUntil ? context.waitUntil.bind(context) : undefined);
+          syncStaticFilesToGitHub(env, context.waitUntil ? context.waitUntil.bind(context) : undefined, url.origin);
         } catch (e) {
           console.error('Error deleting post from D1:', e);
         }
@@ -3960,7 +3960,7 @@ Berdasarkan judul artikel: "${title}" dan isi: "${(content || '').slice(0, 500)}
         }
 
         // Tunggu selesai supaya error bisa dikembalikan ke UI
-        await syncStaticFilesToGitHub(env);
+        await syncStaticFilesToGitHub(env, undefined, url.origin);
 
         let postCount = 0;
         try {
@@ -4420,7 +4420,11 @@ BEGIN TRANSACTION;
   }
 };
 
-async function syncStaticFilesToGitHub(env: Env, waitUntil?: (promise: Promise<any>) => void) {
+async function syncStaticFilesToGitHub(
+  env: Env,
+  waitUntil?: (promise: Promise<any>) => void,
+  requestUrlOrigin?: string
+) {
   const token = env.GITHUB_TOKEN;
   if (!token || !env.DB) {
     throw new Error('GITHUB_TOKEN atau DB belum dikonfigurasi di Cloudflare Pages.');
@@ -4444,7 +4448,7 @@ async function syncStaticFilesToGitHub(env: Env, waitUntil?: (promise: Promise<a
 
     const branch = (env.GITHUB_BRANCH || '').trim() || 'main';
 
-    let siteUrl = env.SITE_URL || requestUrl.origin;
+    let siteUrl = (env.SITE_URL || requestUrlOrigin || '').replace(/\/$/, '');
     let siteName = env.SITE_NAME || 'Blog Engine';
     let siteDescription =
       'Platform publikasi berita, artikel, dan konten interaktif modern.';
@@ -4467,6 +4471,7 @@ async function syncStaticFilesToGitHub(env: Env, waitUntil?: (promise: Promise<a
       const candidate =
         configMap.site_url ||
         env.SITE_URL ||
+        requestUrlOrigin ||
         '';
       if (
         candidate &&
