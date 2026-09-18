@@ -544,57 +544,59 @@ ${articleLinks}
             });
           }
 
-          const cloudName = env.CLOUDINARY_CLOUD_NAME || 'harga-promo-diskon';
-          const apiKey = env.CLOUDINARY_API_KEY || '945558876687176';
-          const apiSecret = env.CLOUDINARY_API_SECRET || '6TBtS1kzFgoNg_4SHmzmSImyPlE';
-          const folder = env.CLOUDINARY_FOLDER || 'parenting-my-id';
+          const cloudName = env.CLOUDINARY_CLOUD_NAME;
+          const apiKey = env.CLOUDINARY_API_KEY;
+          const apiSecret = env.CLOUDINARY_API_SECRET;
+          const folder = env.CLOUDINARY_FOLDER || 'cms-uploads';
 
-          const timestamp = Math.floor(Date.now() / 1000).toString();
-          const format = 'webp';
-          const transformation = 'c_limit,w_1024,q_auto';
+          if (cloudName && apiKey && apiSecret) {
+            const timestamp = Math.floor(Date.now() / 1000).toString();
+            const format = 'webp';
+            const transformation = 'c_limit,w_1024,q_auto';
 
-          const stringToSign = `folder=${folder}&format=${format}&timestamp=${timestamp}&transformation=${transformation}${apiSecret}`;
+            const stringToSign = `folder=${folder}&format=${format}&timestamp=${timestamp}&transformation=${transformation}${apiSecret}`;
 
-          const encoder = new TextEncoder();
-          const data = encoder.encode(stringToSign);
-          const hashBuffer = await crypto.subtle.digest('SHA-1', data);
-          const hashArray = Array.from(new Uint8Array(hashBuffer));
-          const signature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            const encoder = new TextEncoder();
+            const data = encoder.encode(stringToSign);
+            const hashBuffer = await crypto.subtle.digest('SHA-1', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const signature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-          const formData = new URLSearchParams();
-          const filePayload = base64Content.startsWith('data:') ? base64Content : `data:image/jpeg;base64,${base64Content}`;
-          formData.append('file', filePayload);
-          formData.append('api_key', apiKey);
-          formData.append('timestamp', timestamp);
-          formData.append('folder', folder);
-          formData.append('format', format);
-          formData.append('transformation', transformation);
-          formData.append('signature', signature);
+            const formData = new URLSearchParams();
+            const filePayload = base64Content.startsWith('data:') ? base64Content : `data:image/jpeg;base64,${base64Content}`;
+            formData.append('file', filePayload);
+            formData.append('api_key', apiKey);
+            formData.append('timestamp', timestamp);
+            formData.append('folder', folder);
+            formData.append('format', format);
+            formData.append('transformation', transformation);
+            formData.append('signature', signature);
 
-          const cRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: formData.toString(),
-          });
+            const cRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: formData.toString(),
+            });
 
-          const cData: any = await cRes.json();
-          if (cRes.ok && cData.secure_url) {
-            let webpUrl = cData.secure_url;
-            if (!webpUrl.toLowerCase().endsWith('.webp')) {
-              webpUrl = webpUrl.replace(/\.[a-z0-9]+$/i, '.webp');
+            const cData: any = await cRes.json();
+            if (cRes.ok && cData.secure_url) {
+              let webpUrl = cData.secure_url;
+              if (!webpUrl.toLowerCase().endsWith('.webp')) {
+                webpUrl = webpUrl.replace(/\.[a-z0-9]+$/i, '.webp');
+              }
+              return new Response(JSON.stringify({
+                success: true,
+                url: webpUrl,
+                raw_url: cData.secure_url,
+                format: 'webp',
+                width: cData.width,
+                height: cData.height,
+                source: 'cloudinary',
+                bytes: cData.bytes,
+              }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+            } else {
+              console.warn('Cloudinary Worker error, using GitHub fallback:', cData);
             }
-            return new Response(JSON.stringify({
-              success: true,
-              url: webpUrl,
-              raw_url: cData.secure_url,
-              format: 'webp',
-              width: cData.width,
-              height: cData.height,
-              source: 'cloudinary',
-              bytes: cData.bytes,
-            }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-          } else {
-            console.warn('Cloudinary Worker error, using GitHub fallback:', cData);
           }
         } catch (err: any) {
           console.warn('Cloudinary Worker exception, using GitHub fallback:', err);
