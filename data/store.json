@@ -686,7 +686,8 @@
       "avatar": "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=60&q=60&fm=webp",
       "bio": "Editor konten kesehatan dan pengasuhan anak dengan sertifikasi jurnalistik edukasi keluarga.",
       "socialInstagram": "https://instagram.com/mayaputri.editor",
-      "socialLinkedin": "https://linkedin.com/in/maya-putri-editor"
+      "socialLinkedin": "https://linkedin.com/in/maya-putri-editor",
+      "socialWebsite": ""
     },
     {
       "id": 3,
@@ -698,7 +699,8 @@
       "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=60&q=60&fm=webp",
       "bio": "Pemerhati gizi anak, fasilitator pencegahan stunting nasional, serta edukator kesehatan balita.",
       "socialInstagram": "https://instagram.com/ahmad.zk",
-      "socialLinkedin": "https://linkedin.com/in/ahmad-zulkarnain"
+      "socialLinkedin": "https://linkedin.com/in/ahmad-zulkarnain",
+      "socialWebsite": ""
     },
     {
       "id": 4,
@@ -759,6 +761,39 @@
   ],
   "comments": [
     {
+      "id": 1789796221422,
+      "post_slug": "test-slug",
+      "user_name": "Turnstile Tester",
+      "user_email": "test@example.com",
+      "user_avatar": "https://ui-avatars.com/api/?name=Turnstile%20Tester&background=f43f5e&color=fff",
+      "content": "Automated test comment with Turnstile token",
+      "status": "pending",
+      "parent_id": null,
+      "created_at": "2026-09-19T05:37:01.422Z"
+    },
+    {
+      "id": 1789796103792,
+      "post_slug": "test-slug",
+      "user_name": "Bot User",
+      "user_email": "bot@spam.com",
+      "user_avatar": "https://ui-avatars.com/api/?name=Bot%20User&background=f43f5e&color=fff",
+      "content": "spam comment",
+      "status": "pending",
+      "parent_id": null,
+      "created_at": "2026-09-19T05:35:03.792Z"
+    },
+    {
+      "id": 1789796084857,
+      "post_slug": "test-slug",
+      "user_name": "Test User",
+      "user_email": "test@example.com",
+      "user_avatar": "https://ui-avatars.com/api/?name=Test%20User&background=f43f5e&color=fff",
+      "content": "This is a test comment",
+      "status": "pending",
+      "parent_id": null,
+      "created_at": "2026-09-19T05:34:44.857Z"
+    },
+    {
       "id": 1,
       "post_slug": "5-aktivitas-sensory-play-seru-untuk-melatih-motorik-balita",
       "user_name": "Ibu Rahma",
@@ -779,7 +814,22 @@
       "created_at": "2026-09-03T16:39:21.210Z"
     }
   ],
+  "chatLeads": [],
   "suratPembaca": [
+    {
+      "id": 1789796221436,
+      "nama": "Budi",
+      "kota": "Jakarta",
+      "pekerjaan": "Wiraswasta",
+      "tahunLahir": 1990,
+      "phone": "081234567890",
+      "judul": "Uji Validasi Turnstile",
+      "isi": "Isi surat pembaca dengan token proteksi bot",
+      "ipAddress": "127.0.0.1",
+      "status": "pending",
+      "createdAt": "2026-09-19T05:37:01.436Z",
+      "updatedAt": "2026-09-19T05:37:01.436Z"
+    },
     {
       "id": 1,
       "judul": "Apresiasi untuk Pembenahan Taman Kota & Fasilitas Bermain Anak",
@@ -791,8 +841,8 @@
       "phone": "081234567890",
       "ipAddress": "127.0.0.1",
       "status": "published",
-      "createdAt": "2026-09-13T22:10:24.455Z",
-      "updatedAt": "2026-09-13T22:10:24.455Z"
+      "createdAt": "2026-09-17T02:40:31.272Z",
+      "updatedAt": "2026-09-17T02:40:31.272Z"
     },
     {
       "id": 2,
@@ -805,8 +855,8 @@
       "phone": "085678901234",
       "ipAddress": "127.0.0.1",
       "status": "published",
-      "createdAt": "2026-09-10T22:10:24.455Z",
-      "updatedAt": "2026-09-10T22:10:24.455Z"
+      "createdAt": "2026-09-14T02:40:31.272Z",
+      "updatedAt": "2026-09-14T02:40:31.272Z"
     },
     {
       "id": 3,
@@ -819,88 +869,26 @@
       "phone": "081901234567",
       "ipAddress": "127.0.0.1",
       "status": "pending",
-      "createdAt": "2026-09-15T16:10:24.455Z",
-      "updatedAt": "2026-09-15T16:10:24.455Z"
+      "createdAt": "2026-09-18T20:40:31.272Z",
+      "updatedAt": "2026-09-18T20:40:31.272Z"
     }
   ],
   "iklanBaris": [
     {
-      "id": 999,
-      "kategori": "Lowongan Kerja",
-      "keteranganBarang": "[URGENT LOWONGAN] Dibutuhkan 1 orang Penulis Konten Berbasis Riset Jurnal Ilmiah (Evidence-Based Content Writer). Membaca & menyadur jurnal ilmiah terbaru menjadi artikel populer ramah pembaca. Kerja fleksibel WFH / Remote. Hubungi WA pemilik lowongan di +62 899-7776-6566.",
-      "harga": "Rp 300.000 - Rp 600.000 / Artikel",
-      "nama": "HRD Rekrutmen Riset Media",
-      "kota": "Seluruh Indonesia (Remote / WFH)",
-      "pekerjaan": "Penerbitan & Riset Edukasi",
-      "tahunLahir": 1991,
-      "phone": "089977766566",
-      "status": "published",
-      "createdAt": "2026-09-18T07:58:20.532Z"
-    },
-    {
-      "id": 901,
-      "kategori": "Lowongan Kerja",
-      "keteranganBarang": "[URGENT] Dibuka 13 Posisi Penulis Lepas (Freelance Content Writer). Fleksibel WFH, honor per artikel Rp 100k - 350k, bimbingan langsung tim redaksi & peluang kontrak panjang.",
-      "harga": "Rp 100.000 - Rp 350.000/Artikel",
-      "nama": "Meja Redaksi",
-      "kota": "Seluruh Indonesia (WFH)",
-      "pekerjaan": "Penerbitan Media",
-      "tahunLahir": 1990,
-      "phone": "0812-9876-5432",
-      "status": "published",
-      "createdAt": "2026-09-18T07:42:44.947Z"
-    },
-    {
-      "id": 902,
-      "kategori": "Lowongan Kerja",
-      "keteranganBarang": "[TETAP] Dibutuhkan 2 Redaktur Editor Permanen (Full-Time). Mengkurasi naskah, riset fact-checking, dan optimasi SEO Google. Gaji pokok, BPJS, dan bonus pembaca.",
-      "harga": "Rp 6.000.000 - Rp 9.000.000",
-      "nama": "HRD & Dewan Redaksi",
-      "kota": "Jakarta / Hybrid",
-      "pekerjaan": "Media & Pers",
-      "tahunLahir": 1988,
-      "phone": "0812-9876-5432",
-      "status": "published",
-      "createdAt": "2026-09-18T07:42:44.948Z"
-    },
-    {
-      "id": 903,
-      "kategori": "Lowongan Kerja",
-      "keteranganBarang": "[KOMERSIAL] Dibutuhkan 3 Staf Marketing Iklan & Sponsor Brand. Bertugas menjalin kerja sama advertorial dan paket display ad portal. Gaji pokok + komisi tak terbatas.",
-      "harga": "Rp 5.500.000 + Komisi Penjualan",
-      "nama": "Divisi Bisnis & Komersial",
-      "kota": "Jakarta / Surabaya / Bandung",
-      "pekerjaan": "Sales Media",
+      "id": 1789796242331,
+      "kategori": "Peralatan",
+      "keteranganBarang": "Laptop bekas mulus bergaransi resmi",
+      "harga": "5000000",
+      "nama": "Andi",
+      "kota": "Bandung",
+      "pekerjaan": "Karyawan",
       "tahunLahir": 1992,
-      "phone": "0812-9876-5432",
-      "status": "published",
-      "createdAt": "2026-09-18T07:42:44.948Z"
-    },
-    {
-      "id": 904,
-      "kategori": "Lowongan Kerja",
-      "keteranganBarang": "[KAMPUS] Dibutuhkan 2 Talent & Writer Relation Officer. Menjaring calon penulis berbakat dari kampus-kampus, BEM, dan pers mahasiswa. Aktif, energik & persuasif.",
-      "harga": "Rp 4.800.000 - Rp 6.500.000",
-      "nama": "Talent Acquisition Team",
-      "kota": "Jabodetabek & Kota Kampus",
-      "pekerjaan": "Community Relations",
-      "tahunLahir": 1996,
-      "phone": "0812-9876-5432",
-      "status": "published",
-      "createdAt": "2026-09-18T07:42:44.948Z"
-    },
-    {
-      "id": 905,
-      "kategori": "Lowongan Kerja",
-      "keteranganBarang": "[KEAMANAN] Dibutuhkan 1 Petugas Satpam Kantor Redaksi. Menjaga ketertiban kantor, penerimaan tamu resmi, dan patroli keamanan aset. Wajib sertifikat Gada Pratama.",
-      "harga": "Gaji UMR + Lembur + BPJS",
-      "nama": "General Affair (GA)",
-      "kota": "Kantor Pusat Redaksi",
-      "pekerjaan": "Keamanan (Security)",
-      "tahunLahir": 1985,
-      "phone": "0812-9876-5432",
-      "status": "published",
-      "createdAt": "2026-09-18T07:42:44.948Z"
+      "phone": "081298765432",
+      "ipAddress": "10.0.0.97",
+      "status": "pending",
+      "createdAt": "2026-09-19T05:37:22.331Z",
+      "updatedAt": "2026-09-19T05:37:22.331Z",
+      "isAdminAd": 0
     },
     {
       "id": 101,

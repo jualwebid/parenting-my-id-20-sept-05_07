@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1789796221436,
+    "nama": "Budi",
+    "kota": "Jakarta",
+    "pekerjaan": "Wiraswasta",
+    "tahunLahir": 1990,
+    "phone": "081234567890",
+    "judul": "Uji Validasi Turnstile",
+    "isi": "Isi surat pembaca dengan token proteksi bot",
+    "ipAddress": "127.0.0.1",
+    "status": "pending",
+    "createdAt": "2026-09-19T05:37:01.436Z",
+    "updatedAt": "2026-09-19T05:37:01.436Z"
+  },
+  {
+    "id": 1,
+    "judul": "Apresiasi untuk Pembenahan Taman Kota & Fasilitas Bermain Anak",
+    "isi": "Saya ingin menyampaikan apresiasi tinggi kepada pemerintah kota yang telah membenahi fasilitas taman bermain anak di pusat kota. Wahana kini bersih, aman, dan dilengkapi keran cuci tangan serta bangku pendamping yang nyaman. Diharapkan seluruh pengunjung ikut menjaga kebersihannya.",
+    "nama": "Siti Rahmawati",
+    "kota": "Surabaya",
+    "pekerjaan": "Ibu Rumah Tangga",
+    "tahunLahir": 1988,
+    "phone": "081234567890",
+    "ipAddress": "127.0.0.1",
+    "status": "published",
+    "createdAt": "2026-09-17T02:40:31.272Z",
+    "updatedAt": "2026-09-17T02:40:31.272Z"
+  },
+  {
+    "id": 2,
+    "judul": "Mohon Perbaikan Penerangan Jalan Umum Wilayah Melati",
+    "isi": "Lampu penerangan jalan umum (PJU) di kawasan perumahan Melati telah padam selama hampir tiga minggu. Hal ini meresahkan warga saat beraktivitas malam hari. Mohon dinas terkait segera menindaklanjuti demi keamanan dan kenyamanan bersama.",
+    "nama": "Bambang Wijaya",
+    "kota": "Bandung",
+    "pekerjaan": "Karyawan Swasta",
+    "tahunLahir": 1982,
+    "phone": "085678901234",
+    "ipAddress": "127.0.0.1",
+    "status": "published",
+    "createdAt": "2026-09-14T02:40:31.272Z",
+    "updatedAt": "2026-09-14T02:40:31.272Z"
+  },
+  {
+    "id": 3,
+    "judul": "Usulan Penambahan Rute Bus Sekolah Gratis",
+    "isi": "Layanan bus sekolah gratis sangat membantu para siswa, namun jalurnya saat ini masih terbatas di jalan utama. Kami mengusulkan agar rute penjemputan diperluas hingga ke kawasan pemukiman warga.",
+    "nama": "Hendra Kurniawan",
+    "kota": "Semarang",
+    "pekerjaan": "Guru",
+    "tahunLahir": 1990,
+    "phone": "081901234567",
+    "ipAddress": "127.0.0.1",
+    "status": "pending",
+    "createdAt": "2026-09-18T20:40:31.272Z",
+    "updatedAt": "2026-09-18T20:40:31.272Z"
+  }
+]

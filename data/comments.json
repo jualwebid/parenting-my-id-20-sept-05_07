@@ -1,5 +1,38 @@
 [
   {
+    "id": 1789796221422,
+    "post_slug": "test-slug",
+    "user_name": "Turnstile Tester",
+    "user_email": "test@example.com",
+    "user_avatar": "https://ui-avatars.com/api/?name=Turnstile%20Tester&background=f43f5e&color=fff",
+    "content": "Automated test comment with Turnstile token",
+    "status": "pending",
+    "parent_id": null,
+    "created_at": "2026-09-19T05:37:01.422Z"
+  },
+  {
+    "id": 1789796103792,
+    "post_slug": "test-slug",
+    "user_name": "Bot User",
+    "user_email": "bot@spam.com",
+    "user_avatar": "https://ui-avatars.com/api/?name=Bot%20User&background=f43f5e&color=fff",
+    "content": "spam comment",
+    "status": "pending",
+    "parent_id": null,
+    "created_at": "2026-09-19T05:35:03.792Z"
+  },
+  {
+    "id": 1789796084857,
+    "post_slug": "test-slug",
+    "user_name": "Test User",
+    "user_email": "test@example.com",
+    "user_avatar": "https://ui-avatars.com/api/?name=Test%20User&background=f43f5e&color=fff",
+    "content": "This is a test comment",
+    "status": "pending",
+    "parent_id": null,
+    "created_at": "2026-09-19T05:34:44.857Z"
+  },
+  {
     "id": 1,
     "post_slug": "5-aktivitas-sensory-play-seru-untuk-melatih-motorik-balita",
     "user_name": "Ibu Rahma",

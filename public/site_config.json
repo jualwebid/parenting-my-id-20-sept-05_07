@@ -1,4 +1,6 @@
 {
+  "turnstile_site_key": "0x4AAAAAAE8nGvnUYOz8qCjM",
+  "enable_comment_turnstile": true,
   "homepage_display_mode": "default",
   "active_theme_preset": "blog-pastel",
   "font_override_mode": "system",
