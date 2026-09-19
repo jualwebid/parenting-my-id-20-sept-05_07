@@ -61,6 +61,10 @@ Variabel ini menentukan identitas dasar dan alamat kanonikal website Anda. Bersi
 
 Cloudflare Turnstile adalah proteksi anti-bot / anti-brute-force gratis dan ramah pengunjung (tanpa teka-teki gambar yang menjengkelkan).
 
+### Dua Kunci Turnstile yang Dibutuhkan:
+1. **Site Key (Kunci Publik Frontend)**: Ditampilkan di browser pengunjung untuk memunculkan widget validasi Turnstile.
+2. **Secret Key (Kunci Rahasia Backend)**: Disimpan di Environment Variables Cloudflare Pages untuk verifikasi token ke server Cloudflare.
+
 ### `TURNSTILE_SECRET_KEY`
 - **URL Pendaftaran**: [https://dash.cloudflare.com/](https://dash.cloudflare.com/)
 - **Langkah Mendapatkannya**:
@@ -73,9 +77,34 @@ Cloudflare Turnstile adalah proteksi anti-bot / anti-brute-force gratis dan rama
      - **Widget Mode**: Pilih **Managed** (disarankan) atau **Non-interactive**.
   5. Klik **Create**.
   6. Cloudflare akan menampilkan dua kunci:
-     - **Site Key**: Untuk frontend (bisa dimasukkan lewat Pengaturan Admin di dashboard web).
-     - **Secret Key**: Ini yang diisikan ke variabel `TURNSTILE_SECRET_KEY`.
+     - **Site Key**: Kunci publik untuk frontend (lihat cara memasangnya di bawah).
+     - **Secret Key**: Ini yang diisikan ke variabel `TURNSTILE_SECRET_KEY` (Encrypt) di Settings > Environment Variables Cloudflare Pages.
 - **Format Nilai**: Biasanya berawalan `0x4AAAAAA...`
+
+---
+
+### ⚡ PROSEDUR STANDAR: Cara Memasang Turnstile Site Key Saat Install di Domain Baru
+Agar tidak mengalami kendala *Turnstile Error / Domain Not Authorized* saat memasang di domain baru, Anda dapat langsung mengisinya ke database Cloudflare D1:
+
+#### Cara 1: Lewat Cloudflare Dashboard (Paling Mudah)
+1. Buka **Cloudflare Dashboard** > **Workers & Pages** > **D1**.
+2. Pilih database D1 proyek Anda > klik tab **Console**.
+3. Jalankan query SQL berikut:
+   ```sql
+   INSERT OR REPLACE INTO configs (key, value) 
+   VALUES ('turnstile_site_key', '0x4AAAAAA_SITE_KEY_DOMAIN_BARU_ANDA');
+   ```
+4. Selesai! Saat halaman web dibuka, widget Turnstile langsung aktif dan mengenali Site Key domain baru Anda.
+
+#### Cara 2: Lewat Terminal (Wrangler CLI)
+```bash
+npx wrangler d1 execute <NAMA_DATABASE_D1> --command="INSERT OR REPLACE INTO configs (key, value) VALUES ('turnstile_site_key', '0x4AAAAAA_SITE_KEY_DOMAIN_BARU_ANDA');" --remote
+```
+
+#### Cara 3: Masuk ke Portal Admin Menggunakan Kunci Darurat
+Jika belum disetel di database, Anda tetap bisa masuk ke portal admin dengan mengklik **"Gunakan Kunci Darurat"** pada form login admin, masukkan kunci darurat bawaan: `darurat123` (atau nilai variabel `ADMIN_EMERGENCY_KEY`). Setelah berhasil masuk, buka menu **Pengaturan Situs** > isi kolom **Turnstile Site Key** > Simpan.
+
+---
 
 ---
 

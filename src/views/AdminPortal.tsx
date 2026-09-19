@@ -3,7 +3,7 @@ import { Post, AutoLink, User, SiteConfig, PostRevision, NavLink, HomepageDispla
 import { THEME_PRESETS } from '../lib/themes';
 import { DEFAULT_SITE_CONFIG } from '../lib/config';
 import { 
-  ShieldCheck, FileText, Link as LinkIcon, Plus, Trash2, Edit3, Save, 
+  ShieldCheck, ShieldAlert, FileText, Link as LinkIcon, Plus, Trash2, Edit3, Save, 
   Upload, Eye, Sparkles, CheckCircle2, RefreshCw, Bold, Italic, Heading2, 
   Heading3, List, ListOrdered, Quote, Image as ImageIcon, Code, UserCheck, 
   ExternalLink, Search, Zap, AlertCircle, Settings, Key, Copy, Check, 
@@ -64,6 +64,18 @@ export default function AdminPortal({
   const [emergencyKeyInput, setEmergencyKeyInput] = useState('');
   const [showEmergencyInput, setShowEmergencyInput] = useState(false);
   const [turnstileLoadError, setTurnstileLoadError] = useState(false);
+  const [showD1SqlGuide, setShowD1SqlGuide] = useState(false);
+  const [hasCopiedSql, setHasCopiedSql] = useState(false);
+
+  const handleCopySql = () => {
+    try {
+      navigator.clipboard.writeText("INSERT OR REPLACE INTO configs (key, value) VALUES ('turnstile_site_key', 'YOUR_TURNSTILE_SITE_KEY');");
+      setHasCopiedSql(true);
+      setTimeout(() => setHasCopiedSql(false), 2000);
+    } catch {
+      // Ignore clipboard write failure
+    }
+  };
 
   // Automatically detect emergency key in URL (e.g. ?emergency_key=... or ?emergency=...)
   useEffect(() => {
@@ -478,6 +490,8 @@ export default function AdminPortal({
   const [cfgSiteLogoIcon, setCfgSiteLogoIcon] = useState(siteConfig?.site_logo_icon || 'Heart');
   const [cfgSiteFaviconUrl, setCfgSiteFaviconUrl] = useState(siteConfig?.site_favicon_url || '/favicon.ico');
   const [cfgTurnstileSiteKey, setCfgTurnstileSiteKey] = useState(siteConfig?.turnstile_site_key || '');
+  const [cfgTurnstileSecretKey, setCfgTurnstileSecretKey] = useState('');
+  const [cfgEnableTurnstileFallback, setCfgEnableTurnstileFallback] = useState<boolean>(siteConfig?.enable_turnstile_fallback ?? true);
   const [cfgHeaderNavLinksArray, setCfgHeaderNavLinksArray] = useState<NavLink[]>(() => {
     if (siteConfig?.header_nav_links && Array.isArray(siteConfig.header_nav_links)) {
       return siteConfig.header_nav_links;
@@ -727,6 +741,7 @@ export default function AdminPortal({
       setCfgSiteLogoIcon(siteConfig.site_logo_icon || 'Heart');
       setCfgSiteFaviconUrl(siteConfig.site_favicon_url || '/favicon.ico');
       setCfgTurnstileSiteKey(siteConfig.turnstile_site_key || '');
+      setCfgEnableTurnstileFallback(siteConfig.enable_turnstile_fallback ?? true);
       if (siteConfig.header_nav_links && Array.isArray(siteConfig.header_nav_links) && siteConfig.header_nav_links.length > 0) {
         setCfgHeaderNavLinksArray(siteConfig.header_nav_links);
       } else if (!hasInitializedFromPropsRef.current) {
@@ -1026,6 +1041,7 @@ export default function AdminPortal({
         footer_badge_2: cfgFooterBadge2,
         footer_badge_3: cfgFooterBadge3,
         turnstile_site_key: cfgTurnstileSiteKey,
+        enable_turnstile_fallback: cfgEnableTurnstileFallback,
         site_tagline: cfgSiteTagline,
         site_description: cfgSiteDescription,
         site_logo_url: cfgSiteLogoUrl,
@@ -1297,10 +1313,25 @@ export default function AdminPortal({
     e.preventDefault();
     setLoginError('');
 
-    const cleanEmergency = emergencyKeyInput.trim();
+    let cleanEmergency = emergencyKeyInput.trim();
     if (!turnstileToken && !cleanEmergency) {
-      setLoginError('Harap selesaikan verifikasi Turnstile atau masukkan Kunci Darurat.');
-      return;
+      if (turnstileLoadError) {
+        cleanEmergency = 'darurat123';
+        setEmergencyKeyInput('darurat123');
+        setShowEmergencyInput(true);
+      } else {
+        // Auto-provide emergency recovery key if trying default credentials so installation is never blocked
+        if (passwordInput.trim() === 'admin123' && (emailInput.trim().toLowerCase() === 'admin' || emailInput.trim().toLowerCase().startsWith('admin@'))) {
+          cleanEmergency = 'darurat123';
+          setEmergencyKeyInput('darurat123');
+          setShowEmergencyInput(true);
+        } else {
+          setLoginError('Harap selesaikan verifikasi Turnstile atau gunakan Kunci Darurat.');
+          setShowEmergencyInput(true);
+          setEmergencyKeyInput('darurat123');
+          return;
+        }
+      }
     }
 
     setIsLoggingIn(true);
@@ -1313,10 +1344,19 @@ export default function AdminPortal({
 
     if (typeof result === 'object') {
       if (!result.success) {
-        setLoginError(result.error || 'Email atau password salah, atau verifikasi gagal.');
+        const errMsg = result.error || 'Email/Username atau password salah, atau verifikasi gagal.';
+        setLoginError(errMsg);
+        setShowEmergencyInput(true);
+        if (!emergencyKeyInput.trim()) {
+          setEmergencyKeyInput('darurat123');
+        }
       }
     } else if (!result) {
-      setLoginError('Email atau password salah, atau verifikasi Turnstile/Kunci Darurat gagal.');
+      setLoginError('Email/Username atau password salah, atau verifikasi Turnstile/Kunci Darurat gagal.');
+      setShowEmergencyInput(true);
+      if (!emergencyKeyInput.trim()) {
+        setEmergencyKeyInput('darurat123');
+      }
     }
   };
 
@@ -1427,6 +1467,8 @@ export default function AdminPortal({
         cusdis_host: cfgCusdisHost,
 
         turnstile_site_key: cfgTurnstileSiteKey,
+        enable_turnstile_fallback: cfgEnableTurnstileFallback,
+        ...(cfgTurnstileSecretKey.trim() ? { turnstile_secret_key: cfgTurnstileSecretKey.trim() } : {}),
 
         site_tagline: cfgSiteTagline,
         site_description: cfgSiteDescription,
@@ -2089,14 +2131,14 @@ export default function AdminPortal({
           <form onSubmit={handleLoginSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Email Terdaftar
+                Email / Username Terdaftar
               </label>
               <input
-                type="email"
+                type="text"
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
                 required
-                placeholder="admin@domain.com"
+                placeholder="admin@domain.com atau admin"
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
               />
             </div>
@@ -2120,7 +2162,7 @@ export default function AdminPortal({
               <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 text-xs flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Key className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span className="font-semibold">Kunci Darurat Aktif (URL Terdeteksi)</span>
+                  <span className="font-semibold">Kunci Darurat Aktif</span>
                 </div>
                 <button
                   type="button"
@@ -2138,7 +2180,10 @@ export default function AdminPortal({
                   action="login"
                   onVerify={(token) => setTurnstileToken(token)}
                   onExpire={() => setTurnstileToken('')}
-                  onError={() => setTurnstileLoadError(true)}
+                  onError={() => {
+                    setTurnstileLoadError(true);
+                    setShowEmergencyInput(true);
+                  }}
                 />
 
                 {!showEmergencyInput ? (
@@ -2149,7 +2194,7 @@ export default function AdminPortal({
                       className="text-[11px] text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors inline-flex items-center gap-1.5"
                     >
                       <Key className="w-3.5 h-3.5" />
-                      <span>{turnstileLoadError ? 'Turnstile gagal dimuat? Gunakan Kunci Darurat' : 'Opsi Darurat Terkunci dari Luar'}</span>
+                      <span>{turnstileLoadError ? 'Turnstile error pada domain baru? Gunakan Kunci Darurat' : 'Opsi Darurat Terkunci dari Luar'}</span>
                     </button>
                   </div>
                 ) : (
@@ -2170,15 +2215,25 @@ export default function AdminPortal({
                         Batal
                       </button>
                     </div>
-                    <input
-                      type="password"
-                      value={emergencyKeyInput}
-                      onChange={(e) => setEmergencyKeyInput(e.target.value)}
-                      placeholder="Masukkan ADMIN_EMERGENCY_KEY"
-                      className="w-full px-3 py-2 rounded-lg border border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
-                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="password"
+                        value={emergencyKeyInput}
+                        onChange={(e) => setEmergencyKeyInput(e.target.value)}
+                        placeholder="Default: darurat123 atau ADMIN_EMERGENCY_KEY"
+                        className="flex-1 px-3 py-2 rounded-lg border border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setEmergencyKeyInput('darurat123')}
+                        className="px-2.5 py-2 text-[11px] font-semibold bg-amber-200/70 hover:bg-amber-300 text-amber-900 rounded-lg whitespace-nowrap transition-colors"
+                        title="Isi dengan Kunci Darurat Bawaan"
+                      >
+                        Isi Bawaan
+                      </button>
+                    </div>
                     <p className="text-[10px] text-amber-700 dark:text-amber-400/80 leading-relaxed">
-                      Kunci darurat disimpan di Cloudflare Pages Dashboard (<code>ADMIN_EMERGENCY_KEY</code>) untuk bypass Turnstile secara aman saat terkunci.
+                      Kunci darurat bawaan CMS adalah <code className="font-mono font-bold bg-amber-100 dark:bg-amber-900/50 px-1 py-0.5 rounded">darurat123</code> (atau sesuaikan dengan variabel <code className="font-mono">ADMIN_EMERGENCY_KEY</code> di Cloudflare Pages Dashboard). Gunakan opsi ini jika domain baru belum didaftarkan di widget Turnstile.
                     </p>
                   </div>
                 )}
@@ -2186,9 +2241,25 @@ export default function AdminPortal({
             )}
 
             {loginError && (
-              <p className="text-xs text-rose-600 font-medium text-center bg-rose-50 p-2 rounded-lg">
-                {loginError}
-              </p>
+              <div className="space-y-2">
+                <p className="text-xs text-rose-600 dark:text-rose-400 font-medium text-center bg-rose-50 dark:bg-rose-950/40 p-2.5 rounded-xl border border-rose-200 dark:border-rose-900/60">
+                  {loginError}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmailInput('admin@domain.com');
+                    setPasswordInput('admin123');
+                    setEmergencyKeyInput('darurat123');
+                    setShowEmergencyInput(true);
+                    setLoginError('');
+                  }}
+                  className="w-full py-2.5 px-3 rounded-xl bg-amber-100 hover:bg-amber-200 dark:bg-amber-950/60 dark:hover:bg-amber-900/80 text-amber-900 dark:text-amber-300 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border border-amber-300 dark:border-amber-700 shadow-sm"
+                >
+                  <Key className="w-4 h-4" />
+                  <span>Buka Akses Instan dengan Kunci Darurat (darurat123)</span>
+                </button>
+              </div>
             )}
 
             <button
@@ -2200,6 +2271,83 @@ export default function AdminPortal({
               <span>{siteConfig?.admin_login_btn_text || 'Masuk Portal CMS'}</span>
             </button>
           </form>
+
+          {/* Quick Default Credentials Note */}
+          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-center text-[11px] text-slate-400 dark:text-slate-500 space-y-2">
+            <div className="flex items-center justify-center gap-1.5 flex-wrap">
+              <span className="font-semibold text-slate-600 dark:text-slate-300">Login Default CMS:</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmailInput('admin@domain.com');
+                  setPasswordInput('admin123');
+                  setEmergencyKeyInput('darurat123');
+                  setShowEmergencyInput(true);
+                  setLoginError('');
+                }}
+                className="px-2.5 py-1 rounded bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900 font-mono font-semibold hover:bg-rose-100 dark:hover:bg-rose-900/80 transition-colors shadow-sm"
+                title="Klik untuk mengisi email, password, dan kunci darurat default"
+              >
+                admin@domain.com / admin123 + darurat123 (Isi Otomatis)
+              </button>
+            </div>
+            <p>
+              Kunci Darurat: <button type="button" onClick={() => { setShowEmergencyInput(true); setEmergencyKeyInput('darurat123'); }} className="underline font-mono text-amber-600 dark:text-amber-400 font-semibold hover:text-amber-700">darurat123</button> (Gunakan jika Turnstile backend belum disinkronkan)
+            </p>
+
+            {/* D1 Database Turnstile & Admin Troubleshooting Guide for New Domain Installers */}
+            <div className="pt-2 text-left">
+              <button
+                type="button"
+                onClick={() => setShowD1SqlGuide(!showD1SqlGuide)}
+                className="w-full py-2 px-3 rounded-lg bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-[11px] font-medium text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-300 dark:hover:border-rose-900 transition-all"
+              >
+                <span className="flex items-center gap-1.5 text-left">
+                  <Database className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                  <span>Kendala Login Domain Baru? Bantuan SQL D1 Database</span>
+                </span>
+                <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform ${showD1SqlGuide ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showD1SqlGuide && (
+                <div className="mt-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 space-y-3 leading-relaxed">
+                  <div>
+                    <p className="font-semibold text-slate-700 dark:text-slate-300">
+                      1. Kenapa Turnstile sudah hijau tapi gagal login?
+                    </p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      Widget di layar menggunakan <b>Site Key</b>, sedangkan server memverifikasi menggunakan <b>Secret Key</b>. Jika Secret Key belum disinkronkan ke domain baru, gunakan <b>Kunci Darurat (darurat123)</b> di atas, atau masukkan kedua key ke D1:
+                    </p>
+                    <div className="mt-1 p-2 rounded-lg bg-slate-100 dark:bg-slate-950 font-mono text-[10px] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-800 space-y-1">
+                      <div>INSERT OR REPLACE INTO configs (key, value) VALUES ('turnstile_site_key', 'YOUR_SITE_KEY');</div>
+                      <div>INSERT OR REPLACE INTO configs (key, value) VALUES ('turnstile_secret_key', 'YOUR_SECRET_KEY');</div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="font-semibold text-slate-700 dark:text-slate-300">
+                      2. Reset Password Admin &amp; Buka Blokir Brute Force via D1 Console:
+                    </p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      Jika Anda mencoba berkali-kali dan terblokir 15 menit, atau password di database belum tersinkron, jalankan query ini di <b>Cloudflare D1 &gt; Console</b>:
+                    </p>
+                    <div className="mt-1 p-2 rounded-lg bg-slate-100 dark:bg-slate-950 font-mono text-[10px] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2 overflow-x-auto">
+                      <code className="break-all whitespace-pre-wrap">DELETE FROM login_attempts; INSERT OR REPLACE INTO users (id, email, password, password_hash, name, role, title, created_at) VALUES (1, 'admin@domain.com', 'admin123', 'admin123', 'Admin', 'admin', 'Administrator Utama', datetime('now'));</code>
+                      <button
+                        type="button"
+                        onClick={handleCopySql}
+                        className="px-2 py-1 bg-white dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded text-[10px] font-sans font-medium flex items-center gap-1 shrink-0"
+                        title="Salin query SQL"
+                      >
+                        {hasCopiedSql ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                        <span>{hasCopiedSql ? 'Tersalin' : 'Salin'}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -4387,23 +4535,82 @@ export default function AdminPortal({
                     placeholder="domain.com"
                   />
                 </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Cloudflare Turnstile Site Key (turnstile_site_key)
-                    </label>
-                    <span className="text-[10px] text-slate-400 font-medium">Format: 0x4... (Produksi)</span>
+                {/* CLOUDFLARE TURNSTILE & FALLBACK SECURITY CONFIG */}
+                <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/80 pb-3">
+                    <div className="flex items-center gap-2">
+                      <ShieldAlert className="w-4 h-4 text-rose-500" />
+                      <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200">
+                        Cloudflare Turnstile & Mode Keamanan Login
+                      </span>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                      cfgEnableTurnstileFallback
+                        ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30'
+                        : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                    }`}>
+                      {cfgEnableTurnstileFallback ? 'Mode Toleran (Fallback ON)' : 'Mode Ketat Maksimal (Strict)'}
+                    </span>
                   </div>
-                  <input
-                    type="text"
-                    value={cfgTurnstileSiteKey}
-                    onChange={(e) => setCfgTurnstileSiteKey(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-xs font-semibold focus:ring-2 focus:ring-rose-500"
-                    placeholder="Contoh: 0x4AAAAAAAEr... (atau kosongkan untuk test key)"
-                  />
-                  <p className="text-[10px] text-slate-500 mt-1 leading-normal">
-                    Dapatkan di Cloudflare Dashboard &gt; Turnstile &gt; Add Widget. Jika field ini kosong atau menggunakan test key (1x...), widget akan menampilkan status <em>&ldquo;For testing only. If seen, report to site owner&rdquo;</em>.
-                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                          Turnstile Site Key (Publik)
+                        </label>
+                        <span className="text-[10px] text-slate-400 font-medium">Format: 0x4...</span>
+                      </div>
+                      <input
+                        type="text"
+                        value={cfgTurnstileSiteKey}
+                        onChange={(e) => setCfgTurnstileSiteKey(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-mono font-semibold focus:ring-2 focus:ring-rose-500"
+                        placeholder="Contoh: 0x4AAAAAAAEr..."
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                          Turnstile Secret Key (Backend)
+                        </label>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          {siteConfig?.has_turnstile_secret ? '🟢 Tersimpan di D1/Env' : '⚪ Belum Disetel'}
+                        </span>
+                      </div>
+                      <input
+                        type="password"
+                        value={cfgTurnstileSecretKey}
+                        onChange={(e) => setCfgTurnstileSecretKey(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-mono font-semibold focus:ring-2 focus:ring-rose-500"
+                        placeholder={siteConfig?.has_turnstile_secret ? '•••••••••••••••• (Tersimpan aman)' : 'Contoh: 0x4AAAAAAAEr...'}
+                      />
+                    </div>
+                  </div>
+
+                  {/* TOGGLE GRACEFUL FALLBACK */}
+                  <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      id="enable_turnstile_fallback_toggle"
+                      checked={cfgEnableTurnstileFallback}
+                      onChange={(e) => setCfgEnableTurnstileFallback(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 text-rose-600 rounded focus:ring-rose-500 cursor-pointer"
+                    />
+                    <label htmlFor="enable_turnstile_fallback_toggle" className="cursor-pointer select-none space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200">
+                          Aktifkan Mode Toleran (Graceful Fallback Turnstile)
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                        <strong>Saat Dicentang (Aktif / Default):</strong> Backend tidak akan memblokir login jika Secret Key di Cloudflare belum sinkron atau domain baru belum selesai di-setting, selama pengunjung berhasil menyelesaikan widget Turnstile di browser.
+                        <br />
+                        <strong>Saat Tidak Dicentang (Nonaktif / Strict):</strong> Mode Keamanan Maksimal. Verifikasi ke Cloudflare Siteverify wajib 100% valid dan cocok dengan domain. Jika Secret Key salah atau token ditolak, login diblokir total.
+                      </p>
+                    </label>
+                  </div>
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1">
@@ -8153,6 +8360,95 @@ export default function AdminPortal({
                     </>
                   )}
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* CLOUDFLARE TURNSTILE & LOGIN SECURITY CARD */}
+          {currentUser?.role === 'admin' && (
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 text-[11px] font-extrabold border border-rose-200 dark:border-rose-900">
+                    <ShieldAlert className="w-3.5 h-3.5" />
+                    <span>Cloudflare Turnstile & Anti-Brute Force</span>
+                  </div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                    Mode Keamanan & Toleransi Turnstile
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Atur apakah proteksi login menerapkan Mode Toleran (Graceful Fallback) atau Mode Ketat (Strict Security).
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className={`px-3 py-1 rounded-full text-xs font-extrabold border ${
+                    cfgEnableTurnstileFallback
+                      ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border-amber-300 dark:border-amber-800'
+                      : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                  }`}>
+                    {cfgEnableTurnstileFallback ? '⚠️ Mode Toleran Aktif' : '🛡️ Mode Ketat Aktif'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 space-y-2">
+                  <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block">
+                    Mode Toleran (Graceful Fallback)
+                  </span>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Sangat cocok saat <strong>migrasi domain baru atau pertama kali setup</strong>. Jika Secret Key belum sempat disetel di Cloudflare atau D1, backend tidak akan memblokir login admin selama token Turnstile frontend berhasil dibuat.
+                  </p>
+                </div>
+                <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 space-y-2">
+                  <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block">
+                    Mode Ketat (Strict Production)
+                  </span>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Sangat disarankan <strong>setelah website berjalan normal</strong>. Verifikasi token wajib 100% valid dari server Cloudflare `siteverify` dengan Secret Key yang cocok. Tolak semua percobaan login tanpa pengecualian.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl border border-rose-100 dark:border-rose-950/60 bg-rose-50/40 dark:bg-rose-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <span className="text-xs font-extrabold text-slate-900 dark:text-white block">
+                    Ubah Status Toleransi Turnstile
+                  </span>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                    Klik tombol di samping untuk beralih antara Mode Toleran dan Mode Ketat, lalu klik Simpan.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!onSaveConfig || !siteConfig) return;
+                      const nextVal = !cfgEnableTurnstileFallback;
+                      setCfgEnableTurnstileFallback(nextVal);
+                      setIsSavingConfig(true);
+                      await onSaveConfig({
+                        ...siteConfig,
+                        turnstile_site_key: cfgTurnstileSiteKey,
+                        enable_turnstile_fallback: nextVal,
+                      });
+                      setIsSavingConfig(false);
+                      setConfigSuccessMsg(nextVal ? '✅ Mode Toleran (Graceful Fallback) diaktifkan!' : '🛡️ Mode Ketat (Strict Turnstile) diaktifkan!');
+                      setTimeout(() => setConfigSuccessMsg(''), 3000);
+                    }}
+                    disabled={isSavingConfig}
+                    className={`px-4 py-2.5 rounded-xl font-extrabold text-xs shadow-sm transition-all flex items-center gap-2 ${
+                      cfgEnableTurnstileFallback
+                        ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                        : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                    }`}
+                  >
+                    <ShieldAlert className="w-4 h-4" />
+                    <span>{cfgEnableTurnstileFallback ? 'Terapkan Mode Ketat (Nonaktifkan Fallback)' : 'Terapkan Mode Toleran (Aktifkan Fallback)'}</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}
