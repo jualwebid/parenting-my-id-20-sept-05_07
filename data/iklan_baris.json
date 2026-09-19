@@ -1,5 +1,21 @@
 [
   {
+    "id": 1789796242331,
+    "kategori": "Peralatan",
+    "keteranganBarang": "Laptop bekas mulus bergaransi resmi",
+    "harga": "5000000",
+    "nama": "Andi",
+    "kota": "Bandung",
+    "pekerjaan": "Karyawan",
+    "tahunLahir": 1992,
+    "phone": "081298765432",
+    "ipAddress": "10.0.0.97",
+    "status": "pending",
+    "createdAt": "2026-09-19T05:37:22.331Z",
+    "updatedAt": "2026-09-19T05:37:22.331Z",
+    "isAdminAd": 0
+  },
+  {
     "id": 101,
     "title": "Lowongan: 13 Penulis Lepas (Freelance Content Writer)",
     "category": "Lowongan & Jasa",
